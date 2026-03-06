@@ -1,0 +1,62 @@
+name: heatingapp
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto
+    container_name: mosquitto
+    ports:
+      - 1883:1883 #default mqtt port
+      - 9001:9001 #default mqtt port for websockets
+    volumes:
+      - /home/markus/mqtt/config:/mosquitto/config:rw
+      - /home/markus/mqtt/data:/mosquitto/data:rw
+      - /home/markus/mqtt/log:/mosquitto/log:rw
+    restart: unless-stopped
+    networks:
+      - heatingapp
+  mariadb:
+    image: mariadb:11.4.10
+    container_name: mariadb
+    ports:
+      - 3306:3306
+    volumes:
+      - ./mariadb_data:/data/db
+    networks:
+      - heatingapp
+    environment:
+      MYSQL_ROOT_PASSWORD: kingroot
+      MYSQL_DATABASE: heatingdb
+  server: 
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: heatingAppServer
+    # restart: unless-stopped
+    env_file: ./server/.env
+    volumes: 
+    - ./server:/app
+    - /app/node_modules
+    ports: 
+      - 3000:3000
+    networks:
+      - heatingapp
+    depends_on:
+      - mariadb
+      - mosquitto
+
+volumes:
+  mariadb_data:
+  config:
+  data:
+  log:
+
+networks:
+  heatingapp:
+    driver: bridge
+  mqttapp:
+    # Specify driver options
+    driver: bridge
+    external: true
+    driver_opts:
+      com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
+      

@@ -1,4 +1,4 @@
-export const HOST = "localhost";
+export const HOST = "mariadb";
 export const USER = "root";
 //export const PASSWORD = "Markus@1967";
 export const PASSWORD = "kingroot";

@@ -213,6 +213,11 @@ async function periodicTempCheck() {
 app.use(cors()); // permits the access to the index.html
 app.use(json()); // Erlaubt das Verarbeiten von JSON-Daten im Request Body
 
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+console.log("sleep 5000 ");
+ await delay(5000);
 console.log("sync Db");
 
 await db.sequelize.sync({ force: true }).then(() => {

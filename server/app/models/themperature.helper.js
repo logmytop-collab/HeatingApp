@@ -17,7 +17,11 @@ const options = {
   Password: "markus",
   clean: true,
 };
-let client = mqtt.connect("mqtt://localhost:1883", options);
+
+//let client = mqtt.connect("mqtt://127.0.0.1:1883", options);
+//let client = mqtt.connect("mqtt://172.20.0.3:1883", options);
+let client = mqtt.connect("mqtt://mosquitto:1883", options);
+//let client = mqtt.connect("mqtt://mqtt:1883", options);
 
 const getDevIDs = async () => {
   const ret = [];
