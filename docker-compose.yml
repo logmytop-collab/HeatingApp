@@ -26,6 +26,23 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: kingroot
       MYSQL_DATABASE: heatingdb
+  zigbee2mqtt:
+    container_name: zigbee2mqtt
+    image: ghcr.io/koenkk/zigbee2mqtt
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
+      - /run/udev:/run/udev:ro
+    ports:
+        # Frontend port
+      - 8080:8080
+    environment:
+      - TZ=Europe/Berlin
+    devices:
+        # Make sure this matched your adapter location
+      - /dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_3680e523ea73ef11acb6db1e313510fd-if00-port0:/dev/ttyUSB0
+    networks:
+      - heatingapp
   server: 
     build: 
       context: ./server
@@ -43,20 +60,50 @@ services:
     depends_on:
       - mariadb
       - mosquitto
-
+      - zigbee2mqtt
+  frontend: 
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: heatingApp
+    # restart: unless-stopped
+    env_file: ./frontend/.env
+    volumes: 
+    - ./frontend:/app
+    - /app/node_modules
+    ports: 
+      - 5173:5173
+    command: npm run start -- --host
+    networks:
+      - heatingapp
+    depends_on:
+      - mariadb
+      - server
+      - mosquitto
+      - zigbee2mqtt
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - heatingapp
+    depends_on:
+      - frontend
+  
 volumes:
   mariadb_data:
   config:
   data:
   log:
+  caddy_data:
+  caddy_config:
 
 networks:
   heatingapp:
     driver: bridge
-  mqttapp:
-    # Specify driver options
-    driver: bridge
-    external: true
-    driver_opts:
-      com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
       

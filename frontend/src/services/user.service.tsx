@@ -1,7 +1,6 @@
 import axios from "axios";
 import authHeader from "./auth-header";
-
-const API_URL = "http://localhost:3000/api/test/";
+import { SERVER_API_URL } from "./config";
 
 export type userType = {
   username: string;
@@ -13,41 +12,41 @@ export type userType = {
 
 class UserService {
   getPublicContent() {
-    return axios.get(API_URL + "all");
+    return axios.get(process.env.PUBLIC_URL + "all");
   }
 
   getUserBoard() {
-    return axios.get(API_URL + "user", { headers: authHeader() });
+    return axios.get(SERVER_API_URL + "user", { headers: authHeader() });
   }
 
   getModeratorBoard() {
-    return axios.get(API_URL + "mod", { headers: authHeader() });
+    return axios.get(SERVER_API_URL + "mod", { headers: authHeader() });
   }
 
   getThermostatBoard() {
     console.log("getThermostatBoard");
-    return axios.get(API_URL + "thermostat", { headers: authHeader() });
+    return axios.get(SERVER_API_URL + "thermostat", { headers: authHeader() });
   }
 
   getRoomBoard() {
     console.log("getRoomBoard");
-    return axios.get(API_URL + "rooms", { headers: authHeader() });
+    return axios.get(SERVER_API_URL + "rooms", { headers: authHeader() });
   }
 
   getRoom(id: any) {
     console.log("getRoom ", id);
-    return axios.get(API_URL + "room?id=" + id, { headers: authHeader() });
+    return axios.get(SERVER_API_URL + "room?id=" + id, { headers: authHeader() });
   }
 
   saveTargetTemp(room_id: any, targetTemp: number) {
-    const url = API_URL + "setRoomTemp?id=" + room_id + "&temp=" + targetTemp;
+    const url = SERVER_API_URL + "setRoomTemp?id=" + room_id + "&temp=" + targetTemp;
     console.log("calling URL", url);
     return axios.get(url, { headers: authHeader() });
   }
 
   enableStrang(room_id: any, strangID: any, enabled: number) {
     const url =
-      API_URL +
+      SERVER_API_URL +
       "enableStrang?roomID=" +
       room_id +
       "&strangID=" +
@@ -60,7 +59,7 @@ class UserService {
 
   setStrangPos(room_id: any, strangID: any, pos: number) {
     const url =
-      API_URL +
+      SERVER_API_URL +
       "setStrangPos?roomID=" +
       room_id +
       "&strangID=" +
@@ -78,7 +77,7 @@ class UserService {
     stepSize: Number,
   ) {
     const url =
-      API_URL +
+      SERVER_API_URL +
       (open ? "open" : "close") +
       "?roomID=" +
       room_id +
@@ -92,7 +91,7 @@ class UserService {
 
   breakStrangAtPos(room_id: any, strangID: any, open: boolean) {
     const url =
-      API_URL +
+      SERVER_API_URL +
       "break?roomID=" +
       room_id +
       "&strangID=" +
@@ -103,31 +102,31 @@ class UserService {
   }
 
   setZeroStrang(strangID: any) {
-    const url = API_URL + "setZero?strangID=" + strangID;
+    const url = SERVER_API_URL + "setZero?strangID=" + strangID;
     console.log("calling URL", url);
     return axios.get(url, { headers: authHeader() });
   }
 
   setMaxStrang(strangID: any) {
-    const url = API_URL + "setMax?strangID=" + strangID;
+    const url = SERVER_API_URL + "setMax?strangID=" + strangID;
     console.log("calling URL", url);
     return axios.get(url, { headers: authHeader() });
   }
 
   getPosStrang(strangID: any) {
-    const url = API_URL + "getPos?strangID=" + strangID;
+    const url = SERVER_API_URL + "getPos?strangID=" + strangID;
     console.log("calling URL", url);
     return axios.get(url, { headers: authHeader() });
   }
 
   updateName(room_id: any, newName: String) {
-    const url = API_URL + "updateRoomName?id=" + room_id + "&name=" + newName;
+    const url = SERVER_API_URL + "updateRoomName?id=" + room_id + "&name=" + newName;
     console.log("calling URL", url);
     return axios.get(url, { headers: authHeader() });
   }
 
   getAdminBoard() {
-    return axios.get(API_URL + "admin", { headers: authHeader() });
+    return axios.get(SERVER_API_URL + "admin", { headers: authHeader() });
   }
 }
 

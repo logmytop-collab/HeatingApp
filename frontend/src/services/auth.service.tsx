@@ -1,13 +1,13 @@
 import axios from "axios";
 import { userType } from "./user.service";
+import { SERVER_API_URL } from "./config";
 
-const API_URL = "http://localhost:3000/api/auth/";
 
 class AuthService {
   async login(username: string, password: string) {
     //console.log("logon ", username, " pwd ", password);
 
-    const response = await axios.post(API_URL + "signin", {
+    const response = await axios.post(SERVER_API_URL + "signin", {
       username,
       password,
     });
@@ -24,7 +24,7 @@ class AuthService {
   }
 
   register(username: string, email: string, password: string) {
-    return axios.post(API_URL + "signup", {
+    return axios.post(SERVER_API_URL + "signup", {
       username,
       email,
       password,
