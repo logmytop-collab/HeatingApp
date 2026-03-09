@@ -1,8 +1,22 @@
+import mqtt from "mqtt";
 import db from "../models/index.js";
 import { exec, execFile } from "node:child_process";
 import { strangState } from "../routes/strang.routes.js";
 import docker from "dockerode";
 import { existsSync } from "node:fs";
+
+const options = {
+  clientId: "Icke",
+  Username: "markus",
+  Password: "markus",
+  clean: true,
+};
+
+//let client = mqtt.connect("mqtt://127.0.0.1:1883", options);
+//let client = mqtt.connect("mqtt://172.20.0.3:1883", options);
+export let mqttClient = mqtt.connect("mqtt://mosquitto:1883", options);
+//let client = mqtt.connect("mqtt://mqtt:1883", options);
+
 
 const strangs = db.strang;
 
@@ -215,6 +229,82 @@ const set2PinLowExec = (pin1, pin2) => {
     console.error(`stderr: ${stderr}`);
   });
 };
+
+export async function goToStrangPosPinMqtt(strang, down, stepTime) {
+  console.log(
+    "goToStrangPosPinCtrl strang id ",
+    strang.id,
+    " down ",
+    down,
+    " stepTime ",
+    stepTime,
+  );
+
+  try {
+    strang.state =
+      down === true ? strangState.movingDown : strangState.movingUp;
+    console.log("setting strang.state  ", strang.state);
+    await strang.save();
+
+    if (down) {
+      setPinMqtt(strang.pin1, stepTime);
+    } else {
+      setPinMqtt(strang.pin2, stepTime);
+    }
+
+strangs
+          .findOne({
+            where: { id: strangID },
+          })
+          .then((foundStrang) => {
+            const result = Date.parse(strang.updatedAt);
+            let sinceUpdate = nowItIs - result;
+            console.log("foundStrang.state  ", foundStrang.state);
+            if (foundStrang.state === strangState.movingDown) {
+              //console.log("was set to move down  ");
+              foundStrang.currentPos = foundStrang.currentPos + sinceUpdate;
+            } else {
+              if (foundStrang.state === strangState.movingUp) {
+                //console.log("was set to move up  ");
+                foundStrang.currentPos = foundStrang.currentPos - sinceUpdate;
+                if (foundStrang.currentPos < 0) foundStrang.currentPos = 0;
+              } else return;
+            }
+            foundStrang.state = strangState.enabled;
+            //console.log("foundStrang  ", JSON.stringify(foundStrang));
+            foundStrang.save();
+            console.log("strang updated... yeah msec ", sinceUpdate);
+          });
+    } catch (err) {
+    console.log("Using fallback behavior...", err);
+    //strang.currentPos = valveState === ValveState.open ? 10000 : 0;
+    //strang.save();
+  }
+}
+
+
+const set2PinLowMqtt = (pin1, pin2) => {
+  //const cmd = "sudo pinctrl set " + pin1 + "," + pin2 + " op dl";
+  const pinctrl = "/home/markus/utils-master/pinctrl/pinctrl";
+  //const cmd = pinctrl + " set " + pin1 + "," + pin2 + " op dl";
+  const cmd = "~/pin.sh argument ";
+  console.log("exec cmd ", cmd);
+  execFile(cmd, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+    console.error(`stderr: ${stderr}`);
+  });
+};
+
+let client = mqtt.connect("mqtt://mosquitto:1883", options);
+
+const setPinMqtt = (pin, time) => {
+  client.publish("pinctrl", pin + " h " + time);
+};
+
 
 const setPinDocker = (pin, high) => {
   //const cmd = "sudo pinctrl set " + pin + " op d" + (high ? "h" : "l");

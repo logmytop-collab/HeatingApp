@@ -17,6 +17,9 @@ coverage
 # nyc test coverage
 .nyc_output
 
+# output
+output
+
 # Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
 
@@ -40,3 +43,4 @@ jspm_packages
 #Excluding build directory
 public/
 
+state.json
