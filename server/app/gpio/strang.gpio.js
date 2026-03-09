@@ -1,7 +1,8 @@
 import db from "../models/index.js";
-import rpio from "rpio";
-import { exec } from "node:child_process";
+import { exec, execFile } from "node:child_process";
 import { strangState } from "../routes/strang.routes.js";
+import docker from "dockerode";
+import { existsSync } from "node:fs";
 
 const strangs = db.strang;
 
@@ -84,7 +85,7 @@ export async function goToStrangPosPinCtrl(strang, down, stepTime) {
   );
 
   try {
-    console.log("set rpio hiw");
+    console.log("set pio hiw");
     /*
     if (down) strang.currentPos += stepTime;
     else {
@@ -144,9 +145,68 @@ export async function goToStrangPosPinCtrl(strang, down, stepTime) {
 }
 
 const setPin = (pin, high) => {
-  const cmd = "sudo pinctrl set " + pin + " op d" + (high ? "h" : "l");
+  setPinExec(pin, high);
+  //setPinDocker(pin, high);
+};
+
+const set2PinLow = (pin1, pin2) => {
+  set2PinLowExec(pin1, pin2);
+  //set2PinLowDocker(pin1, pin2);
+};
+
+const setPinExec = (pin, high) => {
+  //const cmd = "sudo pinctrl set " + pin + " op d" + (high ? "h" : "l");
+  const pinctrl = "/home/markus/utils-master/pinctrl/pinctrl";
+  //const cmd = pinctrl + " set " + pin + " op d" + (high ? "h" : "l");
+  //const cmd = "~/pin.sh argument ";
+  const cmd = "/app/pinctrl/runpinctrl.sh";
+  if (existsSync("/pinctrl/pinctrl"))
+    console.log("yeah pinctrl path exists ");
+    
+  if (existsSync(cmd)){ 
   console.log("exec cmd ", cmd);
-  exec(cmd, (error, stdout, stderr) => {
+  execFile(cmd, (error, stdout, stderr) => {
+    if (error) {
+    console.log(`stdout: ${stdout}`);
+      console.error(`exec error: ${error}`);
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+    console.error(`stderr: ${stderr}`);
+  });
+  } else
+  {
+    console.log(`can't find : ${cmd}`);
+  }
+  
+
+  const cmd2 = "./pinctrl/runpinctrl.sh";
+  console.log("exec cmd ", cmd2);
+if (existsSync(cmd2)){ 
+  console.log("exec cmd ", cmd);
+  execFile(cmd2, (error, stdout, stderr) => {
+    if (error) {
+    console.log(`stdout: ${stdout}`);
+      console.error(`exec error: ${error}`);
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+    console.error(`stderr: ${stderr}`);
+  });
+  } else
+  {
+    console.log(`can't find : ${cmd2}`);
+  }
+  
+};
+
+const set2PinLowExec = (pin1, pin2) => {
+  //const cmd = "sudo pinctrl set " + pin1 + "," + pin2 + " op dl";
+  const pinctrl = "/home/markus/utils-master/pinctrl/pinctrl";
+  //const cmd = pinctrl + " set " + pin1 + "," + pin2 + " op dl";
+  const cmd = "~/pin.sh argument ";
+  console.log("exec cmd ", cmd);
+  execFile(cmd, (error, stdout, stderr) => {
     if (error) {
       console.error(`exec error: ${error}`);
       return;
@@ -156,15 +216,37 @@ const setPin = (pin, high) => {
   });
 };
 
-const set2PinLow = (pin1, pin2) => {
-  const cmd = "sudo pinctrl set " + pin1 + "," + pin2 + " op dl";
-  console.log("exec cmd ", cmd);
-  exec(cmd, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`exec error: ${error}`);
-      return;
-    }
-    console.log(`stdout: ${stdout}`);
-    console.error(`stderr: ${stderr}`);
-  });
+const setPinDocker = (pin, high) => {
+  //const cmd = "sudo pinctrl set " + pin + " op d" + (high ? "h" : "l");
+  const pinctrl = "/home/markus/utils-master/pinctrl/pinctrl";
+  const cmd = pinctrl + " set " + pin + " op d" + (high ? "h" : "l");
+
+  console.log("run docker ubuntu ", cmd);
+   docker.run('ubuntu', [pinctrl, "set", pin, " op d" + (high ? "h" : "l")], process.stdout, function (err, data, container) {
+console.log(data.StatusCode);
+});
+//promise
+/*
+  docker.run(testImage, [pinctrl, "set", pin, " op d" + (high ? "h" : "l")], process.stdout).then(function(data) {
+    var output = data[0];
+    var container = data[1];
+    console.log(output.StatusCode);
+    return container.remove();
+}).then(function(data) {
+  console.log('container removed');
+}).catch(function(err) {
+  console.log(err);
+});*/
+};
+
+
+const set2PinLowDocker = (pin1, pin2) => {
+  //const cmd = "sudo pinctrl set " + pin1 + "," + pin2 + " op dl";
+  const pinctrl = "/home/markus/utils-master/pinctrl/pinctrl";
+  const cmd = pinctrl + " set " + pin1 + "," + pin2 + " op dl";
+  
+  console.log("run docker ubuntu ", cmd);
+   docker.run('ubuntu', [pinctrl, "set", pin1 + "," + pin2], process.stdout, function (err, data, container) {
+console.log(data.StatusCode);
+});
 };

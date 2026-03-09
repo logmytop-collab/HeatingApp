@@ -2,11 +2,27 @@
     local_certs
 }
 
-auth.localhost {    
-    reverse_proxy frontend:5173 
-    reverse_proxy /zigbee/* zigbee2mqtt:8080 
+heating.localhost {    
+    reverse_proxy frontend:3000 
 }
 
-server.auth.localhost {
+zigbee2mqtt.localhost {    
+    reverse_proxy zigbee2mqtt:8080 
+}
+
+:3000 {    
+    reverse_proxy frontend:3000 
+}
+
+:80 {    
+    reverse_proxy zigbee2mqtt:8080 
+}
+
+:8080 {    
+    reverse_proxy zigbee2mqtt:8080 
+}
+
+
+App.auth.localhost {
     reverse_proxy server:3000
 }

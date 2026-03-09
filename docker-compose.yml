@@ -6,7 +6,7 @@ services:
     container_name: mosquitto
     ports:
       - 1883:1883 #default mqtt port
-      - 9001:9001 #default mqtt port for websockets
+    # - 9001:9001 #default mqtt port for websockets
     volumes:
       - /home/markus/mqtt/config:/mosquitto/config:rw
       - /home/markus/mqtt/data:/mosquitto/data:rw
@@ -14,6 +14,16 @@ services:
     restart: unless-stopped
     networks:
       - heatingapp
+  # pinctrl:
+  #  build: 
+  #    context: ./mypinctrl
+  #    dockerfile: Dockerfile
+  #  volumes:
+  #    - ./output:/app/output  # Mount host's ./output to container's /app/output (persist data)
+  #  environment:
+  #    - APP_NAME=MyDockerApp  # Pass environment variables to the script
+  #    - APP_ENV=production
+  #  command: ./runpinctrl.sh  # Command to run (overrides Dockerfile's CMD if needed)
   mariadb:
     image: mariadb:11.4.10
     container_name: mariadb
@@ -33,9 +43,9 @@ services:
     volumes:
       - ./data:/app/data
       - /run/udev:/run/udev:ro
-    ports:
+  #  ports:
         # Frontend port
-      - 8080:8080
+  #    - 8080:8080
     environment:
       - TZ=Europe/Berlin
     devices:
@@ -43,24 +53,36 @@ services:
       - /dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_3680e523ea73ef11acb6db1e313510fd-if00-port0:/dev/ttyUSB0
     networks:
       - heatingapp
-  server: 
+  server_api: 
     build: 
       context: ./server
       dockerfile: Dockerfile
-    container_name: heatingAppServer
+    container_name: heatingAppApi
     # restart: unless-stopped
     env_file: ./server/.env
+    environment:
+      - APP_NAME=heatingApp
+      - APP_ENV=dev
     volumes: 
-    - ./server:/app
-    - /app/node_modules
-    ports: 
-      - 3000:3000
+      - ./server:/app
+      - /app/node_modules
+      - /home/markus/utils-master/pinctrl:/pinctrl
+      - /lib:/lib
+      - /sys:/sys
+      - /dev:/dev
+      - /proc:/proc
+ #     - /usr:/usr
+ #   ports: 
+ #     - 5000:5000
     networks:
       - heatingapp
+    user: root
     depends_on:
       - mariadb
       - mosquitto
       - zigbee2mqtt
+    #  - pinctrl
+    #devices:
   frontend: 
     build: 
       context: ./frontend
@@ -71,21 +93,25 @@ services:
     volumes: 
     - ./frontend:/app
     - /app/node_modules
-    ports: 
-      - 5173:5173
-    command: npm run start -- --host
+#    ports: 
+#      - 3000:3000
+    command: npm run start
     networks:
       - heatingapp
     depends_on:
       - mariadb
-      - server
+      - server_api
       - mosquitto
       - zigbee2mqtt
   caddy:
     image: caddy:2-alpine
     ports:
+      - 3000:3000
       - 80:80
+      - 8081:8081
+      - 81:81
       - 443:443
+     # - 1883:1883
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
