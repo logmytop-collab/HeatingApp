@@ -7,13 +7,13 @@ COPY package*.json ./
 RUN yarn install
 
 # RUN chmod +x ~/pin.sh
-ENV PATH="$PATH"
+# ENV PATH="$PATH"
 
 COPY . .
 
-USER root
+# USER root
 
-RUN chmod +x ./pinctrl/runpinctrl.sh
+# RUN chmod +x ./pinctrl/runpinctrl.sh
 
 RUN groupadd -f gpio 
 

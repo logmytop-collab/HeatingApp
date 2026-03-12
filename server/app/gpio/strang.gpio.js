@@ -14,7 +14,7 @@ const options = {
 
 //let client = mqtt.connect("mqtt://127.0.0.1:1883", options);
 //let client = mqtt.connect("mqtt://172.20.0.3:1883", options);
-export let mqttClient = mqtt.connect("mqtt://mosquitto:1883", options);
+//export let mqttClient = mqtt.connect("mqtt://mosquitto:1883", options);
 //let client = mqtt.connect("mqtt://mqtt:1883", options);
 
 
@@ -299,10 +299,10 @@ const set2PinLowMqtt = (pin1, pin2) => {
   });
 };
 
-let client = mqtt.connect("mqtt://mosquitto:1883", options);
+//let client = mqtt.connect("mqtt://mosquitto:1883", options);
 
 const setPinMqtt = (pin, time) => {
-  client.publish("pinctrl", pin + " h " + time);
+  //client.publish("pinctrl", pin + " h " + time);
 };
 
 
