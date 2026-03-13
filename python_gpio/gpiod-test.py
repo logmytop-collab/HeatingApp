@@ -16,32 +16,45 @@ print("starting mqtt2pythongpio")
 # LED_PIN = 19
 chip = gpiod.Chip('gpiochip4')
 
+def setPinHigh(pin, delay):
+   try:
+      led_line = chip.get_line(pin)
+      led_line.request(consumer="LED", type=gpiod.LINE_REQ_DIR_OUT)
+      led_line.set_value(1)
+      sleep(delay)
+      led_line.set_value(0)
+      print(f"line {pin} was set high for {delay} sec ")
+   finally:
+      led_line.release()
+
+def setPinLow(pin):
+   try:
+      led_line = chip.get_line(pin)
+      led_line.request(consumer="LED", type=gpiod.LINE_REQ_DIR_OUT)
+      led_line.set_value(0)
+      print(f"line {pin} was set low ")
+   finally:
+      led_line.release()
+
+
 def on_message(client, userdata, msg):
    print("on message")   
    parameter = msg.payload.decode().split(' ')
-   print(f"count parameter {len(parameter)}")
-   print(f"parameter pin 1 {parameter[0]}")
-   print(f"parameter hight/low 2 {parameter[1]}")
-   print(f"parameter time 3 {parameter[2]}")
-   pin = int(parameter[0])
+   print(f"parameter {parameter}")
    high = parameter[1] == "h"
    low = parameter[1] == "l"
-   delay = float(parameter[2]) / 1000
-   if ( not (high or low) ):
-      print("Neither hight or low \n")
-      return
-   led_line = chip.get_line(pin)
-   led_line.request(consumer="LED", type=gpiod.LINE_REQ_DIR_OUT)
-   if (low):
-      led_line.set_value(0)
-      print("line " + pin + " was set low ")
-      return
    if (high):
-      led_line.set_value(1)
-   sleep(delay)
-   led_line.set_value(0)
-   print(f"line {pin} was set high for {delay} sec ")
-   led_line.release()
+      delay = float(parameter[2]) / 1000
+      pin = int(parameter[0])
+      setPinHigh(pin, delay)
+      return
+   if (low):
+      pins = parameter[0].split(',')
+      for pin in pins:
+         setPinLow(int(pin))
+      return
+   print("Neither hight or low \n")
+   return
 
 client = Client("Python GPIO")
 client.username_pw_set(username, pwd)

@@ -109,6 +109,18 @@ class UserService {
     return axios.get(url, { headers: authHeader() });
   }
 
+  moveZeroStrang(strangID: any) {
+    const url = SERVER_USER_API_URL + "moveZero?strangID=" + strangID;
+    console.log("calling URL", url);
+    return axios.get(url, { headers: authHeader() });
+  }
+
+  moveMaxStrang(strangID: any) {
+    const url = SERVER_USER_API_URL + "moveMax?strangID=" + strangID;
+    console.log("calling URL", url);
+    return axios.get(url, { headers: authHeader() });
+  }
+
   setMaxStrang(strangID: any) {
     const url = SERVER_USER_API_URL + "setMax?strangID=" + strangID;
     console.log("calling URL", url);

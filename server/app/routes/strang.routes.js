@@ -90,6 +90,28 @@ async function setZero(req, res) {
   res.status(200).send(JSON.stringify(strang.currentPos));
 }
 
+async function moveZero(req, res) {
+  console.log("strangID ", JSON.stringify(req.query.strangID));
+  const strangID = req.query.strangID;
+  const strang = await strangs.findOne({
+    where: { id: strangID },
+  });
+  strang.currentPos = 0;
+  await strang.save();
+  res.status(200).send(JSON.stringify(strang.currentPos));
+}
+
+async function moveMax(req, res) {
+  console.log("strangID ", JSON.stringify(req.query.strangID));
+  const strangID = req.query.strangID;
+  const strang = await strangs.findOne({
+    where: { id: strangID },
+  });
+  strang.currentPos = 0;
+  await strang.save();
+  res.status(200).send(JSON.stringify(strang.currentPos));
+}
+
 async function setMax(req, res) {
   console.log("strangID ", JSON.stringify(req.query.strangID));
   const strangID = req.query.strangID;
@@ -203,6 +225,8 @@ export default function strangRoutes(app) {
   app.get("/api/test/break", [verifyToken], breakStrangRequest);
   app.get("/api/test/setZero", [verifyToken], setZero);
   app.get("/api/test/setMax", [verifyToken], setMax);
+  app.get("/api/test/moveZero", [verifyToken], moveZero);
+  app.get("/api/test/moveMax", [verifyToken], moveMax);
   app.get("/api/test/getPos", [verifyToken], getPos);
 
   app.get("/api/test/enableStrang", [verifyToken], enableStrang);

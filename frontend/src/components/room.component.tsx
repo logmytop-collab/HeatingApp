@@ -43,6 +43,8 @@ import SouthIcon from "@mui/icons-material/South";
 import PausePresentationIcon from "@mui/icons-material/PausePresentation";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import UnpublishedIcon from "@mui/icons-material/Unpublished";
+import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
+import NotInterestedIcon from '@mui/icons-material/NotInterested';
 
 const RoomForm = () => {
   const [originalName, setOriginalName] = useState<string | null>();
@@ -269,6 +271,54 @@ const RoomForm = () => {
     console.log("enableStrang ");
     setIdxStrangPosEdit(-1);
     UserService.setZeroStrang(strangID).then(
+      (response) => {
+        console.log("new zero pos  ", JSON.stringify(response.data));
+        //setContent(response.data);
+      },
+      (error) => {
+        setError(
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+            error.message ||
+            error.toString(),
+        );
+
+        if (error.response && error.response.status === 401) {
+          EventBus.dispatch("logout", null);
+        }
+      },
+    );
+  };
+
+  const moveStrangZero = (strangID: number) => {
+    console.log("enableStrang ");
+    setIdxStrangPosEdit(-1);
+    UserService.moveZeroStrang(strangID).then(
+      (response) => {
+        console.log("new zero pos  ", JSON.stringify(response.data));
+        //setContent(response.data);
+      },
+      (error) => {
+        setError(
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+            error.message ||
+            error.toString(),
+        );
+
+        if (error.response && error.response.status === 401) {
+          EventBus.dispatch("logout", null);
+        }
+      },
+    );
+  };
+
+  const moveStrangMax = (strangID: number) => {
+    console.log("enableStrang ");
+    setIdxStrangPosEdit(-1);
+    UserService.moveMaxStrang(strangID).then(
       (response) => {
         console.log("new zero pos  ", JSON.stringify(response.data));
         //setContent(response.data);
@@ -1123,6 +1173,25 @@ const RoomForm = () => {
                   Set 0
                 </Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.smallConfigButton]}
+                onPress={() => {
+                  if (moveStrangUp === null) {
+                    const strangID = (content as any).strangs[
+                      showStrangSettings
+                    ].id;
+                    moveStrangZero(strangID);
+                  }
+                }}
+              >
+                <Text
+                  style={[
+                    { color: moveStrangUp === null ? "#1100ff" : "#2a2a2a" },
+                  ]}
+                >
+                  Close
+                </Text>
+              </TouchableOpacity>
             </View>
             <View style={[styles.strangConfigButtonRow]}>
               <TouchableOpacity
@@ -1195,6 +1264,25 @@ const RoomForm = () => {
                   ]}
                 >
                   Set Max
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.smallConfigButton]}
+                onPress={() => {
+                  if (moveStrangUp === null) {
+                    const strangID = (content as any).strangs[
+                      showStrangSettings
+                    ].id;
+                    moveStrangMax(strangID);
+                  }
+                }}
+              >
+                <Text
+                  style={[
+                    { color: moveStrangUp === null ? "#1100ff" : "#2a2a2a" },
+                  ]}
+                >
+                  Open
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1466,7 +1554,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 6,
-    width: 80,
+    width: 62,
     height: 40,
     backgroundColor: "rgb(221, 220, 220)",
   },
