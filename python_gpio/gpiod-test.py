@@ -13,7 +13,7 @@ mqtt_broker = "mosquitto"
 
 print("starting mqtt2pythongpio")
 
-LED_PIN = 17
+# LED_PIN = 19
 chip = gpiod.Chip('gpiochip4')
 
 def on_message(client, userdata, msg):
@@ -30,7 +30,7 @@ def on_message(client, userdata, msg):
    if ( not (high or low) ):
       print("Neither hight or low \n")
       return
-   led_line = chip.get_line(LED_PIN)
+   led_line = chip.get_line(pin)
    led_line.request(consumer="LED", type=gpiod.LINE_REQ_DIR_OUT)
    if (low):
       led_line.set_value(0)
