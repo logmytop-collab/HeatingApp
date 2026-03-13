@@ -8,9 +8,9 @@ services:
       - 1883:1883 #default mqtt port
     # - 9001:9001 #default mqtt port for websockets
     volumes:
-      - /home/markus/mqtt/config:/mosquitto/config:rw
-      - /home/markus/mqtt/data:/mosquitto/data:rw
-      - /home/markus/mqtt/log:/mosquitto/log:rw
+      - ./mqtt/config:/mosquitto/config:rw
+      - ./mqtt/data:/mosquitto/data:rw
+      - ./mqtt/log:/mosquitto/log:rw
     restart: unless-stopped
     networks:
       - heatingapp
