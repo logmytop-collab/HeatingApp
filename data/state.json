@@ -1,8 +1,8 @@
 {
     "0xf4b3b1fffe52241d": {
         "battery": 100,
-        "humidity": 51.4,
-        "temperature": 22.5,
+        "humidity": 49.9,
+        "temperature": 23.5,
         "comfort_temperature_min": 19,
         "comfort_temperature_max": 27,
         "comfort_humidity_min": 40,

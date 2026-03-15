@@ -4,6 +4,8 @@ import { exec, execFile } from "node:child_process";
 import { strangState } from "../routes/strang.routes.js";
 import docker from "dockerode";
 import { existsSync } from "node:fs";
+import { mqttClient } from "../mytt/mqtt.helper.js";
+import { QueryTypes } from "sequelize";
 
 const options = {
   clientId: "Icke",
@@ -16,7 +18,6 @@ const options = {
 //let client = mqtt.connect("mqtt://172.20.0.3:1883", options);
 //export let mqttClient = mqtt.connect("mqtt://mosquitto:1883", options);
 //let client = mqtt.connect("mqtt://mqtt:1883", options);
-
 
 const strangs = db.strang;
 
@@ -174,44 +175,39 @@ const setPinExec = (pin, high) => {
   //const cmd = pinctrl + " set " + pin + " op d" + (high ? "h" : "l");
   //const cmd = "~/pin.sh argument ";
   const cmd = "/app/pinctrl/runpinctrl.sh";
-  if (existsSync("/pinctrl/pinctrl"))
-    console.log("yeah pinctrl path exists ");
-    
-  if (existsSync(cmd)){ 
-  console.log("exec cmd ", cmd);
-  execFile(cmd, (error, stdout, stderr) => {
-    if (error) {
-    console.log(`stdout: ${stdout}`);
-      console.error(`exec error: ${error}`);
-      return;
-    }
-    console.log(`stdout: ${stdout}`);
-    console.error(`stderr: ${stderr}`);
-  });
-  } else
-  {
+  if (existsSync("/pinctrl/pinctrl")) console.log("yeah pinctrl path exists ");
+
+  if (existsSync(cmd)) {
+    console.log("exec cmd ", cmd);
+    execFile(cmd, (error, stdout, stderr) => {
+      if (error) {
+        console.log(`stdout: ${stdout}`);
+        console.error(`exec error: ${error}`);
+        return;
+      }
+      console.log(`stdout: ${stdout}`);
+      console.error(`stderr: ${stderr}`);
+    });
+  } else {
     console.log(`can't find : ${cmd}`);
   }
-  
 
   const cmd2 = "./pinctrl/runpinctrl.sh";
   console.log("exec cmd ", cmd2);
-if (existsSync(cmd2)){ 
-  console.log("exec cmd ", cmd);
-  execFile(cmd2, (error, stdout, stderr) => {
-    if (error) {
-    console.log(`stdout: ${stdout}`);
-      console.error(`exec error: ${error}`);
-      return;
-    }
-    console.log(`stdout: ${stdout}`);
-    console.error(`stderr: ${stderr}`);
-  });
-  } else
-  {
+  if (existsSync(cmd2)) {
+    console.log("exec cmd ", cmd);
+    execFile(cmd2, (error, stdout, stderr) => {
+      if (error) {
+        console.log(`stdout: ${stdout}`);
+        console.error(`exec error: ${error}`);
+        return;
+      }
+      console.log(`stdout: ${stdout}`);
+      console.error(`stderr: ${stderr}`);
+    });
+  } else {
     console.log(`can't find : ${cmd2}`);
   }
-  
 };
 
 const set2PinLowExec = (pin1, pin2) => {
@@ -232,7 +228,7 @@ const set2PinLowExec = (pin1, pin2) => {
 
 export async function goToStrangPosPinMqtt(strang, down, stepTime) {
   console.log(
-    "goToStrangPosPinCtrl strang id ",
+    "goToStrangPosPinMqtt strang id ",
     strang.id,
     " down ",
     down,
@@ -252,59 +248,124 @@ export async function goToStrangPosPinMqtt(strang, down, stepTime) {
       setPinMqtt(strang.pin2, stepTime);
     }
 
-strangs
-          .findOne({
-            where: { id: strangID },
-          })
-          .then((foundStrang) => {
-            const result = Date.parse(strang.updatedAt);
-            let sinceUpdate = nowItIs - result;
-            console.log("foundStrang.state  ", foundStrang.state);
-            if (foundStrang.state === strangState.movingDown) {
-              //console.log("was set to move down  ");
-              foundStrang.currentPos = foundStrang.currentPos + sinceUpdate;
-            } else {
-              if (foundStrang.state === strangState.movingUp) {
-                //console.log("was set to move up  ");
-                foundStrang.currentPos = foundStrang.currentPos - sinceUpdate;
-                if (foundStrang.currentPos < 0) foundStrang.currentPos = 0;
-              } else return;
-            }
-            foundStrang.state = strangState.enabled;
-            //console.log("foundStrang  ", JSON.stringify(foundStrang));
-            foundStrang.save();
-            console.log("strang updated... yeah msec ", sinceUpdate);
-          });
-    } catch (err) {
+    setTimeout((strangID = strang.id, time = stepTime) => {
+      const nowItIs = Date.now();
+      strangs
+        .findOne({
+          where: { id: strangID },
+        })
+        .then((foundStrang) => {
+          const result = Date.parse(strang.updatedAt);
+          let sinceUpdate = nowItIs - result;
+          console.log(
+            "foundStrang.state  ",
+            foundStrang.state,
+            " sinceUpdate ",
+            sinceUpdate,
+          );
+          if (foundStrang.state === strangState.movingDown) {
+            //console.log("was set to move down  ");
+            foundStrang.currentPos =
+              Number(foundStrang.currentPos) + Number(time);
+          } else {
+            if (foundStrang.state === strangState.movingUp) {
+              //console.log("was set to move up  ");
+              foundStrang.currentPos =
+                Number(foundStrang.currentPos) - Number(time);
+              if (foundStrang.currentPos < 0) foundStrang.currentPos = 0;
+            } else return;
+          }
+          foundStrang.state = strangState.enabled;
+          //console.log("foundStrang  ", JSON.stringify(foundStrang));
+          foundStrang.save();
+          console.log("strang updated... yeah msec ", sinceUpdate);
+        });
+    }, stepTime);
+  } catch (err) {
     console.log("Using fallback behavior...", err);
     //strang.currentPos = valveState === ValveState.open ? 10000 : 0;
     //strang.save();
   }
 }
 
+const set2PinLowMqtt = async (strang) => {
+  console.log(
+    "goToStrangPosPinMqtt strang id ",
+    strang.id,
+    " down ",
+    down,
+    " stepTime ",
+    stepTime,
+  );
 
-const set2PinLowMqtt = (pin1, pin2) => {
-  //const cmd = "sudo pinctrl set " + pin1 + "," + pin2 + " op dl";
-  const pinctrl = "/home/markus/utils-master/pinctrl/pinctrl";
-  //const cmd = pinctrl + " set " + pin1 + "," + pin2 + " op dl";
-  const cmd = "~/pin.sh argument ";
-  console.log("exec cmd ", cmd);
-  execFile(cmd, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`exec error: ${error}`);
-      return;
+  try {
+    mqttClient.publish("pinctrl", pins + " l ");
+
+    strang.state =
+      down === true ? strangState.movingDown : strangState.movingUp;
+    console.log("setting strang.state  ", strang.state);
+    await strang.save();
+
+    if (down) {
+      setPinMqtt(strang.pin1, stepTime);
+    } else {
+      setPinMqtt(strang.pin2, stepTime);
     }
-    console.log(`stdout: ${stdout}`);
-    console.error(`stderr: ${stderr}`);
-  });
-};
 
-//let client = mqtt.connect("mqtt://mosquitto:1883", options);
+    setTimeout((strangID, stepTime) => {
+      strangs
+        .findOne({
+          where: { id: strangID },
+        })
+        .then((foundStrang) => {
+          const result = Date.parse(strang.updatedAt);
+          let sinceUpdate = nowItIs - result;
+          console.log("foundStrang.state  ", foundStrang.state);
+          if (foundStrang.state === strangState.movingDown) {
+            //console.log("was set to move down  ");
+            foundStrang.currentPos = foundStrang.currentPos + stepTime;
+          } else {
+            if (foundStrang.state === strangState.movingUp) {
+              //console.log("was set to move up  ");
+              foundStrang.currentPos = foundStrang.currentPos - stepTime;
+              if (foundStrang.currentPos < 0) foundStrang.currentPos = 0;
+            } else return;
+          }
+          foundStrang.state = strangState.enabled;
+          //console.log("foundStrang  ", JSON.stringify(foundStrang));
+          foundStrang.save();
+          console.log("strang updated... yeah msec ", sinceUpdate);
+        });
+    }, stepTime);
+  } catch (err) {
+    console.log("Using fallback behavior...", err);
+    //strang.currentPos = valveState === ValveState.open ? 10000 : 0;
+    //strang.save();
+  }
+};
 
 const setPinMqtt = (pin, time) => {
-  //client.publish("pinctrl", pin + " h " + time);
+  mqttClient.publish("pinctrl", pin + " h " + time);
 };
 
+export const setAllPinsLowMqtt = () => {
+  db.sequelize
+    .query("select distinct pin1, pin2 from Strangs", {
+      type: QueryTypes.SELECT,
+    })
+    .then((foundPins) => {
+      console.log("found pins: ", JSON.stringify(foundPins));
+      const pinGIOs = [];
+      for (let i = 0; i < foundPins.length; i++) {
+        console.log("found pin: ", JSON.stringify(foundPins[i]));
+        pinGIOs.push(foundPins[i].pin1);
+        pinGIOs.push(foundPins[i].pin2);
+      }
+      const pins = pinGIOs.join(",");
+      console.log("pints low ", pins);
+      mqttClient.publish("pinctrl", pins + " l ");
+    });
+};
 
 const setPinDocker = (pin, high) => {
   //const cmd = "sudo pinctrl set " + pin + " op d" + (high ? "h" : "l");
@@ -312,11 +373,16 @@ const setPinDocker = (pin, high) => {
   const cmd = pinctrl + " set " + pin + " op d" + (high ? "h" : "l");
 
   console.log("run docker ubuntu ", cmd);
-   docker.run('ubuntu', [pinctrl, "set", pin, " op d" + (high ? "h" : "l")], process.stdout, function (err, data, container) {
-console.log(data.StatusCode);
-});
-//promise
-/*
+  docker.run(
+    "ubuntu",
+    [pinctrl, "set", pin, " op d" + (high ? "h" : "l")],
+    process.stdout,
+    function (err, data, container) {
+      console.log(data.StatusCode);
+    },
+  );
+  //promise
+  /*
   docker.run(testImage, [pinctrl, "set", pin, " op d" + (high ? "h" : "l")], process.stdout).then(function(data) {
     var output = data[0];
     var container = data[1];
@@ -329,14 +395,18 @@ console.log(data.StatusCode);
 });*/
 };
 
-
 const set2PinLowDocker = (pin1, pin2) => {
   //const cmd = "sudo pinctrl set " + pin1 + "," + pin2 + " op dl";
   const pinctrl = "/home/markus/utils-master/pinctrl/pinctrl";
   const cmd = pinctrl + " set " + pin1 + "," + pin2 + " op dl";
-  
+
   console.log("run docker ubuntu ", cmd);
-   docker.run('ubuntu', [pinctrl, "set", pin1 + "," + pin2], process.stdout, function (err, data, container) {
-console.log(data.StatusCode);
-});
+  docker.run(
+    "ubuntu",
+    [pinctrl, "set", pin1 + "," + pin2],
+    process.stdout,
+    function (err, data, container) {
+      console.log(data.StatusCode);
+    },
+  );
 };

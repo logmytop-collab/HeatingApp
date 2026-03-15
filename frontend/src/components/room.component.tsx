@@ -43,8 +43,8 @@ import SouthIcon from "@mui/icons-material/South";
 import PausePresentationIcon from "@mui/icons-material/PausePresentation";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import UnpublishedIcon from "@mui/icons-material/Unpublished";
-import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
-import NotInterestedIcon from '@mui/icons-material/NotInterested';
+import PanoramaFishEyeIcon from "@mui/icons-material/PanoramaFishEye";
+import NotInterestedIcon from "@mui/icons-material/NotInterested";
 
 const RoomForm = () => {
   const [originalName, setOriginalName] = useState<string | null>();
@@ -239,9 +239,74 @@ const RoomForm = () => {
   };
 
   const openCloseStrang = (strangID: number, open: boolean) => {
-    console.log("enableStrang ");
+    console.log(
+      "openCloseStrang ",
+      strangID,
+      " open ",
+      open,
+      " stepSize ",
+      stepSize,
+    );
     setIdxStrangPosEdit(-1);
     UserService.openCloseStrang(id, strangID, open, stepSize).then(
+      (response) => {
+        console.log("new temp ", JSON.stringify(response.data));
+        setTimeout(() => {
+          console.log("reset button after ", stepSize);
+          setMoveStrangUp(null);
+          getCurrentConfigStrangPos(strangID);
+        }, stepSize);
+        //setContent(response.data);
+      },
+      (error) => {
+        setError(
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+            error.message ||
+            error.toString(),
+        );
+
+        if (error.response && error.response.status === 401) {
+          EventBus.dispatch("logout", null);
+        }
+      },
+    );
+  };
+
+  const closeStrang = (strangID: number) => {
+    console.log("enableStrang ");
+    setIdxStrangPosEdit(-1);
+    UserService.closeStrang(id, strangID).then(
+      (response) => {
+        console.log("new temp ", JSON.stringify(response.data));
+        setTimeout(() => {
+          console.log("reset button after ", stepSize);
+          setMoveStrangUp(null);
+          getCurrentConfigStrangPos(strangID);
+        }, stepSize);
+        //setContent(response.data);
+      },
+      (error) => {
+        setError(
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+            error.message ||
+            error.toString(),
+        );
+
+        if (error.response && error.response.status === 401) {
+          EventBus.dispatch("logout", null);
+        }
+      },
+    );
+  };
+
+  const openStrang = (strangID: number) => {
+    console.log("enableStrang ");
+    setIdxStrangPosEdit(-1);
+    UserService.openStrang(id, strangID).then(
       (response) => {
         console.log("new temp ", JSON.stringify(response.data));
         setTimeout(() => {
@@ -1180,7 +1245,7 @@ const RoomForm = () => {
                     const strangID = (content as any).strangs[
                       showStrangSettings
                     ].id;
-                    moveStrangZero(strangID);
+                    closeStrang(strangID);
                   }
                 }}
               >
@@ -1273,7 +1338,7 @@ const RoomForm = () => {
                     const strangID = (content as any).strangs[
                       showStrangSettings
                     ].id;
-                    moveStrangMax(strangID);
+                    openStrang(strangID);
                   }
                 }}
               >

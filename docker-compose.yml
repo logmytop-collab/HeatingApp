@@ -12,7 +12,7 @@ services:
       - heatingapp
     environment:
       MYSQL_ROOT_PASSWORD: kingroot
-      MYSQL_DATABASE: heatingdb      
+      MYSQL_DATABASE: heatingdb
   zigbee2mqtt:
     container_name: zigbee2mqtt
     image: ghcr.io/koenkk/zigbee2mqtt
@@ -20,58 +20,58 @@ services:
     volumes:
       - ./data:/app/data
       - /run/udev:/run/udev:ro
-  #  ports:
-        # Frontend port
-  #    - 8080:8080
+    #  ports:
+    # Frontend port
+    #    - 8080:8080
     environment:
       - TZ=Europe/Berlin
     devices:
-        # Make sure this matched your adapter location
+      # Make sure this matched your adapter location
       - /dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_3680e523ea73ef11acb6db1e313510fd-if00-port0:/dev/ttyUSB0
     networks:
       - heatingapp
-  server_api: 
-    build: 
+  server_api:
+    build:
       context: ./server
       dockerfile: Dockerfile
     container_name: heatingAppApi
-    # restart: unless-stopped
+    restart: unless-stopped
     env_file: ./server/.env
     environment:
       - APP_NAME=heatingApp
       - APP_ENV=dev
-    volumes: 
+    volumes:
       - ./server:/app
       - /app/node_modules
- #     - /home/markus/utils-master/pinctrl:/pinctrl
- #     - /lib:/lib
- #     - /sys:/sys
- #     - /dev:/dev
- #     - /proc:/proc
- #     - /usr:/usr
- #   ports: 
- #     - 5000:5000
+    #     - /home/markus/utils-master/pinctrl:/pinctrl
+    #     - /lib:/lib
+    #     - /sys:/sys
+    #     - /dev:/dev
+    #     - /proc:/proc
+    #     - /usr:/usr
+    #   ports:
+    #     - 5000:5000
     networks:
-      - heatingapp      
- #   user: root
+      - heatingapp
+    #   user: root
     depends_on:
       - mariadb
       - mosquitto
       - zigbee2mqtt
     #  - pinctrl
     #devices:
-  frontend: 
-    build: 
+  frontend:
+    build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: heatingApp
     # restart: unless-stopped
     env_file: ./frontend/.env
-    volumes: 
-    - ./frontend:/app
-    - /app/node_modules
-#    ports: 
-#      - 3000:3000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    #    ports:
+    #      - 3000:3000
     command: npm run start
     networks:
       - heatingapp
@@ -132,4 +132,3 @@ networks:
   heatingapp:
     external: false
     driver: bridge
-  

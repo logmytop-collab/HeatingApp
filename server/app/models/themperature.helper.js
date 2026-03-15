@@ -7,21 +7,16 @@ import {
   ValveState,
 } from "../gpio/strang.gpio.js";
 
+import { mqttClient } from "../mytt/mqtt.helper.js";
+
 const thermostats = db.thermostat;
 const room = db.room;
 const strangs = db.strang;
 
-const options = {
-  clientId: "Icke",
-  Username: "markus",
-  Password: "markus",
-  clean: true,
-};
-
-//let client = mqtt.connect("mqtt://127.0.0.1:1883", options);
-//let client = mqtt.connect("mqtt://172.20.0.3:1883", options);
-let client = mqtt.connect("mqtt://mosquitto:1883", options);
-//let client = mqtt.connect("mqtt://mqtt:1883", options);
+//let mqttClient = mqtt.connect("mqtt://127.0.0.1:1883", options);
+//let mqttClient = mqtt.connect("mqtt://172.20.0.3:1883", options);
+//let mqttClient = mqtt.connect("mqtt://mosquitto:1883", options);
+//let mqttClient = mqtt.connect("mqtt://mqtt:1883", options);
 
 const getDevIDs = async () => {
   const ret = [];
@@ -82,40 +77,40 @@ const updateRoomStrangs = async (roomID) => {
 const setUpMqtt = () => {
   console.log("in setUpMqtt() ");
 
-  client.on("connect", () => {
+  mqttClient.on("connect", () => {
     console.log("connected ... ");
 
-    client.subscribe("presence", (err) => {
+    mqttClient.subscribe("presence", (err) => {
       if (!err) {
-        client.publish("presence", "Hello mqtt");
+        mqttClient.publish("presence", "Hello mqtt");
       }
     });
 
-    console.log("client.subscribe('sensor/temperature')");
+    console.log("mqttClient.subscribe('sensor/temperature')");
   });
 
   const topic = "/sensors/temperature";
 
-  client.subscribe("zigbee2mqtt/Toilette");
-  console.log('twice client.subscribe("zigbee2mqtt/Toilette")');
+  mqttClient.subscribe("zigbee2mqtt/Toilette");
+  console.log('twice mqttClient.subscribe("zigbee2mqtt/Toilette")');
 
   getDevIDs().then((names) => {
     console.log("got names ", names.join("-"));
     names.forEach((name) => {
       const subText = "zigbee2mqtt/" + name;
-      client.subscribe(subText);
+      mqttClient.subscribe(subText);
       console.log("subsribe text ", subText);
     });
   });
 
-  client.publish(topic, "payload", { qos: 1 }, (err) => {
+  mqttClient.publish(topic, "payload", { qos: 1 }, (err) => {
     if (err) {
       console.error(err);
     }
     console.log("published");
   });
 
-  client.on("message", (topic, message) => {
+  mqttClient.on("message", (topic, message) => {
     // message is Buffer
     console.log("mqtt message topic ", topic);
     console.log("mqtt message");
@@ -191,7 +186,7 @@ const setUpMqtt = () => {
   });
 
   // error handling
-  client.on("error", (error) => {
+  mqttClient.on("error", (error) => {
     console.error(error);
     process.exit(1);
   });

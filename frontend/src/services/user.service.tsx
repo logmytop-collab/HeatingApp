@@ -27,7 +27,9 @@ class UserService {
 
   getThermostatBoard() {
     console.log("getThermostatBoard");
-    return axios.get(SERVER_USER_API_URL + "thermostat", { headers: authHeader() });
+    return axios.get(SERVER_USER_API_URL + "thermostat", {
+      headers: authHeader(),
+    });
   }
 
   getRoomBoard() {
@@ -37,11 +39,14 @@ class UserService {
 
   getRoom(id: any) {
     console.log("getRoom ", id);
-    return axios.get(SERVER_USER_API_URL + "room?id=" + id, { headers: authHeader() });
+    return axios.get(SERVER_USER_API_URL + "room?id=" + id, {
+      headers: authHeader(),
+    });
   }
 
   saveTargetTemp(room_id: any, targetTemp: number) {
-    const url = SERVER_USER_API_URL + "setRoomTemp?id=" + room_id + "&temp=" + targetTemp;
+    const url =
+      SERVER_USER_API_URL + "setRoomTemp?id=" + room_id + "&temp=" + targetTemp;
     console.log("calling URL", url);
     return axios.get(url, { headers: authHeader() });
   }
@@ -80,13 +85,39 @@ class UserService {
   ) {
     const url =
       SERVER_USER_API_URL +
-      (open ? "open" : "close") +
+      "moveStep" +
       "?roomID=" +
       room_id +
       "&strangID=" +
       strangID +
       "&stepSize=" +
-      stepSize;
+      stepSize +
+      "&up=" +
+      (open ? "false" : "true");
+    console.log("calling URL", url);
+    return axios.get(url, { headers: authHeader() });
+  }
+
+  openStrang(room_id: any, strangID: any) {
+    const url =
+      SERVER_USER_API_URL +
+      "moveZero" +
+      "?roomID=" +
+      room_id +
+      "&strangID=" +
+      strangID;
+    console.log("calling URL", url);
+    return axios.get(url, { headers: authHeader() });
+  }
+
+  closeStrang(room_id: any, strangID: any) {
+    const url =
+      SERVER_USER_API_URL +
+      "moveMax" +
+      "?roomID=" +
+      room_id +
+      "&strangID=" +
+      strangID;
     console.log("calling URL", url);
     return axios.get(url, { headers: authHeader() });
   }
@@ -134,7 +165,8 @@ class UserService {
   }
 
   updateName(room_id: any, newName: String) {
-    const url = SERVER_USER_API_URL + "updateRoomName?id=" + room_id + "&name=" + newName;
+    const url =
+      SERVER_USER_API_URL + "updateRoomName?id=" + room_id + "&name=" + newName;
     console.log("calling URL", url);
     return axios.get(url, { headers: authHeader() });
   }

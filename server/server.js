@@ -19,7 +19,7 @@ import db from "./app/models/index.js";
 import thermostatRoutes from "./app/routes/thermostat.routes.js";
 import setUpMqtt from "./app/models/themperature.helper.js";
 import { or } from "sequelize";
-
+import { setAllPinsLowMqtt } from "./app/gpio/strang.gpio.js";
 
 // **********************************************
 // 2. KONFIGURATION
@@ -212,36 +212,48 @@ async function periodicTempCheck() {
 // 3. MIDDLEWARE & DATENBANK-SETUP
 // **********************************************
 
-
-var whitelist = ['http://localhost:3000', 'http://server_api:5000', 'http://172.20.0.5:5000']; //white list consumers
+var whitelist = [
+  "http://localhost:3000",
+  "http://server_api:5000",
+  "http://172.20.0.5:5000",
+]; //white list consumers
 var corsOptions = {
   origin: function (origin, callback) {
-    console.log("white list ?? ")
-    for (let i = 0; i < whitelist.length; i++)  {
+    console.log("white list ?? ");
+    for (let i = 0; i < whitelist.length; i++) {
       if (origin.indexOf(whitelist[i]) >= 0) {
         console.log("yeah ", origin);
-        
+
         callback(null, true);
         return;
       }
-    }  
+    }
     console.log("ups no  ", origin);
     callback(null, false);
   },
-  methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
+  methods: ["GET", "PUT", "POST", "DELETE", "OPTIONS"],
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
   credentials: true, //Credentials are cookies, authorization headers or TLS client certificates.
-  allowedHeaders: ['x-access-token', 'Content-Type', 'Authorization', 'X-Requested-With', 'device-remember-token', 'Access-Control-Allow-Origin', 'Origin', 'Accept']
+  allowedHeaders: [
+    "x-access-token",
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "device-remember-token",
+    "Access-Control-Allow-Origin",
+    "Origin",
+    "Accept",
+  ],
 };
 
 app.use(cors(corsOptions)); // permits the access to the index.html
 app.use(json()); // Erlaubt das Verarbeiten von JSON-Daten im Request Body
 
 function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 console.log("sleep 5000 ");
- await delay(5000);
+await delay(5000);
 console.log("sync Db");
 
 await db.sequelize.sync({ force: true }).then(() => {
@@ -263,9 +275,7 @@ runThempCheckTimer();
 
 // --- 4a. Basis Test-Endpunkt ---
 app.get("/", (req, res) => {
-  res.send(
-    `<h1>Express API läuft!</h1> Verbunden mit MariaDB an Port.`,
-  );
+  res.send(`<h1>Express API läuft!</h1> Verbunden mit MariaDB an Port.`);
 });
 
 authRoutes(app);
@@ -302,6 +312,10 @@ app.get("/api/briefe", async (req, res) => {
 });
 
 setTimeout(setUpMqtt, 10000);
+
+setTimeout(() => {
+  setAllPinsLowMqtt();
+}, 15000);
 
 // **********************************************
 // 5. SERVER STARTEN

@@ -7,8 +7,9 @@ import {
 
 import db from "../models/index.js";
 import {
-  moveStrang,
+  goToStrangPosPinMqtt,
   breakStrangByID,
+  moveStrang,
   ValveState,
 } from "../gpio/strang.gpio.js";
 
@@ -96,9 +97,11 @@ async function moveZero(req, res) {
   const strang = await strangs.findOne({
     where: { id: strangID },
   });
-  strang.currentPos = 0;
-  await strang.save();
-  res.status(200).send(JSON.stringify(strang.currentPos));
+  const timeStep = strang.currentPos;
+
+  goToStrangPosPinMqtt(strang, timeStep > 0, Math.abs(timeStep));
+
+  res.status(200).send("OK");
 }
 
 async function moveMax(req, res) {
@@ -107,9 +110,12 @@ async function moveMax(req, res) {
   const strang = await strangs.findOne({
     where: { id: strangID },
   });
-  strang.currentPos = 0;
-  await strang.save();
-  res.status(200).send(JSON.stringify(strang.currentPos));
+
+  const timeStep = (strang.currentPos = strang.maxPos);
+
+  goToStrangPosPinMqtt(strang, timeStep > 0, Math.abs(timeStep));
+
+  res.status(200).send("OK");
 }
 
 async function setMax(req, res) {
@@ -182,6 +188,8 @@ async function setStrangPos(req, res) {
   strang.state = 2;
   await strang.save();
 
+  goToStrangPosPinMqtt(strang);
+
   const room = await rooms.findOne({
     where: { user_id: req.userId, id: roomID },
     include: [
@@ -207,6 +215,22 @@ async function setStrangPos(req, res) {
   //openStrang(strang, enabled === 1 ? ValveState.open : ValveState.close);
 }
 
+async function moveStep(req, res) {
+  console.log("set strang pos", req.query);
+  const roomID = req.query.roomID;
+  const strangID = req.query.strangID;
+  const stepSize = req.query.stepSize;
+  const up = req.query.up === "true";
+  console.log(" strang id", strangID, " new Pos ", stepSize, " up ", up);
+  const strang = await strangs.findOne({
+    where: { id: strangID },
+  });
+  goToStrangPosPinMqtt(strang, up === false, stepSize);
+
+  res.status(200).send("OK");
+  //openStrang(strang, enabled === 1 ? ValveState.open : ValveState.close);
+}
+
 export default function strangRoutes(app) {
   app.use(function (req, res, next) {
     res.header(
@@ -227,6 +251,7 @@ export default function strangRoutes(app) {
   app.get("/api/test/setMax", [verifyToken], setMax);
   app.get("/api/test/moveZero", [verifyToken], moveZero);
   app.get("/api/test/moveMax", [verifyToken], moveMax);
+  app.get("/api/test/moveStep", [verifyToken], moveStep);
   app.get("/api/test/getPos", [verifyToken], getPos);
 
   app.get("/api/test/enableStrang", [verifyToken], enableStrang);
