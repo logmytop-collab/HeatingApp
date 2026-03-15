@@ -308,12 +308,12 @@ const RoomForm = () => {
     setIdxStrangPosEdit(-1);
     UserService.openStrang(id, strangID).then(
       (response) => {
-        console.log("new temp ", JSON.stringify(response.data));
+        console.log("open temp ", JSON.stringify(response.data));
         setTimeout(() => {
-          console.log("reset button after ", stepSize);
+          console.log("open strang ");
           setMoveStrangUp(null);
           getCurrentConfigStrangPos(strangID);
-        }, stepSize);
+        }, 5000);
         //setContent(response.data);
       },
       (error) => {
@@ -338,6 +338,11 @@ const RoomForm = () => {
     UserService.setZeroStrang(strangID).then(
       (response) => {
         console.log("new zero pos  ", JSON.stringify(response.data));
+        setTimeout(() => {
+          console.log("reset button after ", stepSize);
+          setMoveStrangUp(null);
+          getCurrentConfigStrangPos(strangID);
+        }, 100);
         //setContent(response.data);
       },
       (error) => {
@@ -410,7 +415,12 @@ const RoomForm = () => {
     UserService.setMaxStrang(strangID).then(
       (response) => {
         console.log("new max pos zero ", JSON.stringify(response.data));
-        //setContent(response.data);
+        console.log("new temp ", JSON.stringify(response.data));
+        setTimeout(() => {
+          console.log("reset button after ", stepSize);
+          setMoveStrangUp(null);
+          getCurrentConfigStrangPos(strangID);
+        }, 200); //setContent(response.data);
       },
       (error) => {
         setError(

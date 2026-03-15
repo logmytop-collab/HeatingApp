@@ -2,7 +2,7 @@
     "0xf4b3b1fffe52241d": {
         "battery": 100,
         "humidity": 49.9,
-        "temperature": 23.5,
+        "temperature": 23.3,
         "comfort_temperature_min": 19,
         "comfort_temperature_max": 27,
         "comfort_humidity_min": 40,
@@ -10,6 +10,13 @@
         "temperature_units": "celsius",
         "temperature_calibration": 0,
         "humidity_calibration": 0,
-        "linkquality": 200
+        "linkquality": 200,
+        "update": {
+            "state": "idle",
+            "installed_version": 8960,
+            "latest_version": 8960,
+            "latest_source": "https://raw.githubusercontent.com/Koenkk/zigbee-OTA/master/images/Sonoff/snzb-02d_v2.3.0.ota",
+            "latest_release_notes": null
+        }
     }
 }
