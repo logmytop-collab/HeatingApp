@@ -14,6 +14,11 @@ zigbee2mqtt.localhost {
     reverse_proxy frontend:3000 
 }
 
+:5000 {    
+    reverse_proxy server_api:5000 
+
+}
+
 :80 {    
     reverse_proxy zigbee2mqtt:8080 
 }

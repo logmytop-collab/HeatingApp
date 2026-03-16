@@ -130,8 +130,8 @@ const RoomForm = () => {
 
   useEffect(() => {
     updateContent();
-    //  const interval = setInterval(updateContent, 60000);
-    //  return () => clearInterval(interval);
+    const interval = setInterval(updateContent, 60000);
+    return () => clearInterval(interval);
   }, []); // Runs only once
 
   const showAlert = () => {

@@ -2,9 +2,7 @@ import axios from "axios";
 import { userType } from "./user.service";
 import { SERVER_API_URL } from "./config";
 
-
 export const SERVER_AUTH_API_URL = SERVER_API_URL + "/api/auth/";
-
 
 class AuthService {
   async login(username: string, password: string) {

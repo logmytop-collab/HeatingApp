@@ -1,6 +1,7 @@
 import { verifyToken } from "./../middleware/authJwt.js";
 
 import db from "../models/index.js";
+import { updateRoom } from "../models/themperature.helper.js";
 
 const rooms = db.room;
 const strangs = db.strang;
@@ -103,6 +104,7 @@ async function setRoomTemperature(req, res) {
   room.targetTemperature = Number(targetTemperature);
   console.log("JSON.stringify(roomsWithStrangs):", JSON.stringify(room));
   await room.save();
+  await updateRoom(room);
   console.log("after save");
   //console.log("JSON.stringify(roomsWithStrangs):", JSON.stringify(room));
 

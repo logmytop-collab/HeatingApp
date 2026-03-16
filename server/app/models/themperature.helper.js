@@ -32,7 +32,7 @@ const getDevIDs = async () => {
   return ret;
 };
 
-const updateRoomStrangs = async (roomID) => {
+const updateRoomStrangsByID = async (roomID) => {
   room
     .findOne({
       where: { id: roomID },
@@ -59,34 +59,38 @@ const updateRoomStrangs = async (roomID) => {
     })
     .then((foundRoom) => {
       console.log("found room yeah ");
-      if (foundRoom.thermostats.length === 0) {
-        console.log("no thermostat found");
-        return;
-      }
-      var currentTemperature = 0;
-      for (var i = 0; i < foundRoom.thermostats.length; i++) {
-        currentTemperature += foundRoom.thermostats[i].temperature;
-      }
-      currentTemperature /= foundRoom.thermostats.length;
-      console.log(
-        "currentTemperature ",
-        currentTemperature,
-        " foundRoom.targetTemperature ",
-        foundRoom.targetTemperature,
-      );
-      if (currentTemperature < foundRoom.targetTemperature) {
-        for (var i = 0; i < foundRoom.strangs.length; i++) {
-          moveMax(foundRoom.strangs[i]);
-        }
-      } else {
-        for (var i = 0; i < foundRoom.strangs.length; i++) {
-          moveZero(foundRoom.strangs[i]);
-        }
-      }
+      updateRoom(foundRoom);
     })
     .catch((err) => {
       console.log("error on loading room", err);
     });
+};
+
+export const updateRoom = async (room) => {
+  if (room.thermostats.length === 0) {
+    console.log("no thermostat found");
+    return;
+  }
+  var currentTemperature = 0;
+  for (var i = 0; i < room.thermostats.length; i++) {
+    currentTemperature += room.thermostats[i].temperature;
+  }
+  currentTemperature /= room.thermostats.length;
+  console.log(
+    "currentTemperature ",
+    currentTemperature,
+    " foundRoom.targetTemperature ",
+    room.targetTemperature,
+  );
+  if (currentTemperature < room.targetTemperature) {
+    for (var i = 0; i < room.strangs.length; i++) {
+      moveMax(room.strangs[i]);
+    }
+  } else {
+    for (var i = 0; i < room.strangs.length; i++) {
+      moveZero(room.strangs[i]);
+    }
+  }
 };
 
 const setUpMqtt = () => {
@@ -183,7 +187,7 @@ const setUpMqtt = () => {
               .then(() => {
                 console.log("saved temperature ");
 
-                updateRoomStrangs(foundTherma.room.id);
+                updateRoomStrangsByID(foundTherma.room.id);
               })
               .catch((err) => {
                 console.log("error on saved temperature ", err);

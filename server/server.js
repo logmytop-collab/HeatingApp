@@ -222,11 +222,13 @@ async function periodicTempCheck() {
 var whitelist = [
   "http://localhost:3000",
   "http://server_api:5000",
-  "http://172.20.0.5:5000",
+  "http://172.20.0.5",
+  "http://192.168.178.85",
 ]; //white list consumers
+
 var corsOptions = {
   origin: function (origin, callback) {
-    console.log("white list ?? ");
+    console.log("white list origin ?? ", origin);
     for (let i = 0; i < whitelist.length; i++) {
       if (origin.indexOf(whitelist[i]) >= 0) {
         console.log("yeah ", origin);
