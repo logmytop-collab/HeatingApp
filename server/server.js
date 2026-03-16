@@ -130,9 +130,16 @@ async function initial() {
       targetTemperature: 20,
       temperature: 23,
       strangs: [
-        { name: "Strang 08", pin1: 27, pin2: 17, currentPos: 0, state: 1 },
+        {
+          name: "Strang 08",
+          pin1: 27,
+          pin2: 17,
+          currentPos: 0,
+          maxPos: 6000,
+          state: 1,
+        },
       ],
-      thermostats: [{ name: "Toilette", deviceID: "0xa49e69fffe6daa28" }],
+      thermostats: [{ name: "Toilette", deviceID: "0xf4b3b1fffe52241d" }], //
     },
     {
       include: [
@@ -193,7 +200,7 @@ async function periodicTempCheck() {
       {
         model: strangs,
         as: "strangs",
-        attributes: ["id", "name", "pin1", "pin2", "currentPos"], // Only select needed fields
+        attributes: ["id", "name", "pin1", "pin2", "currentPos", "maxPos"], // Only select needed fields
       },
     ],
   });

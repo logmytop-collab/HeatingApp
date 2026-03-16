@@ -226,6 +226,27 @@ const set2PinLowExec = (pin1, pin2) => {
   });
 };
 
+export async function moveZero(strang) {
+  const timeStep = strang.currentPos;
+  if (timeStep === 0) return;
+  goToStrangPosPinMqtt(strang, timeStep < 0, Math.abs(timeStep));
+}
+
+export async function moveMax(strang) {
+  const timeStep = strang.currentPos - strang.maxPos;
+  if (timeStep === 0) return;
+  console.log(
+    "move Max strang.currentPos =",
+    strang.currentPos,
+    "  strang.maxPos =",
+    strang.maxPos,
+    " timeStep ",
+    timeStep,
+  );
+
+  goToStrangPosPinMqtt(strang, timeStep < 0, Math.abs(timeStep));
+}
+
 export async function goToStrangPosPinMqtt(strang, down, stepTime) {
   console.log(
     "goToStrangPosPinMqtt strang id ",

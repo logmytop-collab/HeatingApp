@@ -11,6 +11,8 @@ import {
   breakStrangByID,
   moveStrang,
   ValveState,
+  moveMax,
+  moveZero,
 } from "../gpio/strang.gpio.js";
 
 const strangs = db.strang;
@@ -91,29 +93,26 @@ async function setZero(req, res) {
   res.status(200).send(JSON.stringify(strang.currentPos));
 }
 
-async function moveZero(req, res) {
-  console.log("strangID ", JSON.stringify(req.query.strangID));
+async function moveZeroRoute(req, res) {
+  console.log("Move zero ", JSON.stringify(req.query.strangID));
   const strangID = req.query.strangID;
   const strang = await strangs.findOne({
     where: { id: strangID },
   });
-  const timeStep = strang.currentPos;
 
-  goToStrangPosPinMqtt(strang, timeStep > 0, Math.abs(timeStep));
+  await moveZero(strang);
 
   res.status(200).send("OK");
 }
 
-async function moveMax(req, res) {
-  console.log("strangID ", JSON.stringify(req.query.strangID));
+async function moveMaxRoute(req, res) {
+  console.log("move Max ", JSON.stringify(req.query.strangID));
   const strangID = req.query.strangID;
   const strang = await strangs.findOne({
     where: { id: strangID },
   });
 
-  const timeStep = (strang.currentPos = strang.maxPos);
-
-  goToStrangPosPinMqtt(strang, timeStep > 0, Math.abs(timeStep));
+  await moveMax(strang);
 
   res.status(200).send("OK");
 }
@@ -162,7 +161,15 @@ async function enableStrang(req, res) {
       {
         model: strangs,
         as: "strangs",
-        attributes: ["id", "name", "pin1", "pin2", "currentPos", "state"], // Only select needed fields
+        attributes: [
+          "id",
+          "name",
+          "pin1",
+          "pin2",
+          "currentPos",
+          "maxPos",
+          "state",
+        ], // Only select needed fields
       },
     ],
   });
@@ -201,7 +208,15 @@ async function setStrangPos(req, res) {
       {
         model: strangs,
         as: "strangs",
-        attributes: ["id", "name", "pin1", "pin2", "currentPos", "state"], // Only select needed fields
+        attributes: [
+          "id",
+          "name",
+          "pin1",
+          "pin2",
+          "currentPos",
+          "maxPos",
+          "state",
+        ], // Only select needed fields
       },
     ],
   });
@@ -249,8 +264,8 @@ export default function strangRoutes(app) {
   app.get("/api/test/break", [verifyToken], breakStrangRequest);
   app.get("/api/test/setZero", [verifyToken], setZero);
   app.get("/api/test/setMax", [verifyToken], setMax);
-  app.get("/api/test/moveZero", [verifyToken], moveZero);
-  app.get("/api/test/moveMax", [verifyToken], moveMax);
+  app.get("/api/test/moveZero", [verifyToken], moveZeroRoute);
+  app.get("/api/test/moveMax", [verifyToken], moveMaxRoute);
   app.get("/api/test/moveStep", [verifyToken], moveStep);
   app.get("/api/test/getPos", [verifyToken], getPos);
 

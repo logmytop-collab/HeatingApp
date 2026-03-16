@@ -45,6 +45,7 @@ import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import UnpublishedIcon from "@mui/icons-material/Unpublished";
 import PanoramaFishEyeIcon from "@mui/icons-material/PanoramaFishEye";
 import NotInterestedIcon from "@mui/icons-material/NotInterested";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 const RoomForm = () => {
   const [originalName, setOriginalName] = useState<string | null>();
@@ -93,7 +94,7 @@ const RoomForm = () => {
     //console.log("useEffect BoardRoom ", JSON.stringify(content));
     if (moveStrangUp !== null) {
       const strangID = (content as any).strangs[showStrangSettings].id;
-      openCloseStrang(strangID, !moveStrangUp);
+      openOrCloseStrang(!moveStrangUp);
     }
   }, [moveStrangUp]); // Runs only once
 
@@ -238,7 +239,9 @@ const RoomForm = () => {
     );
   };
 
-  const openCloseStrang = (strangID: number, open: boolean) => {
+  const openOrCloseStrang = (open: boolean) => {
+    const strang = (content as any).strangs[showStrangSettings];
+    const strangID = (strang as any).id;
     console.log(
       "openCloseStrang ",
       strangID,
@@ -255,7 +258,7 @@ const RoomForm = () => {
           console.log("reset button after ", stepSize);
           setMoveStrangUp(null);
           getCurrentConfigStrangPos(strangID);
-        }, stepSize);
+        }, stepSize + 500);
         //setContent(response.data);
       },
       (error) => {
@@ -274,8 +277,11 @@ const RoomForm = () => {
     );
   };
 
-  const closeStrang = (strangID: number) => {
-    console.log("enableStrang ");
+  const closeStrang = () => {
+    const strang = (content as any).strangs[showStrangSettings];
+    const strangID = (strang as any).id;
+    const currentPos = Math.abs((strang as any).currentPos);
+    console.log("Close strang ");
     setIdxStrangPosEdit(-1);
     UserService.closeStrang(id, strangID).then(
       (response) => {
@@ -284,7 +290,7 @@ const RoomForm = () => {
           console.log("reset button after ", stepSize);
           setMoveStrangUp(null);
           getCurrentConfigStrangPos(strangID);
-        }, stepSize);
+        }, currentPos);
         //setContent(response.data);
       },
       (error) => {
@@ -303,17 +309,25 @@ const RoomForm = () => {
     );
   };
 
-  const openStrang = (strangID: number) => {
-    console.log("enableStrang ");
+  const openStrang = () => {
+    console.log("open Strang ");
+    const strang = (content as any).strangs[showStrangSettings];
+    const strangID = (strang as any).id;
+    const currentPos = Math.abs((strang as any).currentPos);
+    const maxPos = Math.abs((strang as any).maxPos);
+
     setIdxStrangPosEdit(-1);
     UserService.openStrang(id, strangID).then(
       (response) => {
-        console.log("open temp ", JSON.stringify(response.data));
-        setTimeout(() => {
-          console.log("open strang ");
-          setMoveStrangUp(null);
-          getCurrentConfigStrangPos(strangID);
-        }, 5000);
+        console.log("open temp currentPos", currentPos, " naxPos", maxPos);
+        setTimeout(
+          () => {
+            console.log("open strang ");
+            setMoveStrangUp(null);
+            getCurrentConfigStrangPos(strangID);
+          },
+          Math.abs(maxPos - currentPos) + 500,
+        );
         //setContent(response.data);
       },
       (error) => {
@@ -409,8 +423,9 @@ const RoomForm = () => {
     );
   };
 
-  const setStrangMax = (strangID: number) => {
+  const setStrangMax = () => {
     console.log("enableStrang ");
+    const strangID = (content as any).strangs[showStrangSettings].id;
     setIdxStrangPosEdit(-1);
     UserService.setMaxStrang(strangID).then(
       (response) => {
@@ -554,7 +569,7 @@ const RoomForm = () => {
           px: number,
           py: number,
         ) => {
-          console.log("Position ", x, "", y);
+          console.log("Position x ", x, " y ", y);
         },
       );
   };
@@ -1255,7 +1270,7 @@ const RoomForm = () => {
                     const strangID = (content as any).strangs[
                       showStrangSettings
                     ].id;
-                    closeStrang(strangID);
+                    closeStrang();
                   }
                 }}
               >
@@ -1282,9 +1297,29 @@ const RoomForm = () => {
                 />
               </TouchableOpacity>
               <View style={[{ flexDirection: "column" }]}>
-                <Text style={[{ alignContent: "center" }]}>
-                  Position {strang.currentPos}
-                </Text>
+                <View style={[{ flexDirection: "row", rowGap: 6 }]}>
+                  <Text style={[{ alignContent: "center" }]}>
+                    Position {strang.currentPos}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (moveStrangUp === null) {
+                        const strangID = (content as any).strangs[
+                          showStrangSettings
+                        ].id;
+                        getCurrentConfigStrangPos(strangID);
+                      }
+                    }}
+                  >
+                    <RefreshIcon
+                      fontSize="small"
+                      color="action"
+                      sx={{
+                        color: moveStrangUp !== null ? "#4f4f50" : "#1100ff",
+                      }}
+                    />
+                  </TouchableOpacity>
+                </View>
                 <View style={[{ flexDirection: "row" }]}>
                   <Text style={[{ alignContent: "center" }]}>Step size</Text>
                   <select
@@ -1329,7 +1364,7 @@ const RoomForm = () => {
                     const strangID = (content as any).strangs[
                       showStrangSettings
                     ].id;
-                    setStrangMax(strangID);
+                    setStrangMax();
                   }
                 }}
               >
@@ -1348,7 +1383,7 @@ const RoomForm = () => {
                     const strangID = (content as any).strangs[
                       showStrangSettings
                     ].id;
-                    openStrang(strangID);
+                    openStrang();
                   }
                 }}
               >

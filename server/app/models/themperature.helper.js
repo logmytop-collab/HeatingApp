@@ -4,7 +4,8 @@ import { Op } from "sequelize";
 import {
   goToStrangPosPinCtrl,
   maxTIME,
-  ValveState,
+  moveMax,
+  moveZero,
 } from "../gpio/strang.gpio.js";
 
 import { mqttClient } from "../mytt/mqtt.helper.js";
@@ -44,7 +45,15 @@ const updateRoomStrangs = async (roomID) => {
         {
           model: strangs,
           as: "strangs",
-          attributes: ["id", "name", "pin1", "pin2", "currentPos", "staTE"], // Only select needed fields
+          attributes: [
+            "id",
+            "name",
+            "pin1",
+            "pin2",
+            "currentPos",
+            "maxPos",
+            "staTE",
+          ], // Only select needed fields
         },
       ],
     })
@@ -56,16 +65,22 @@ const updateRoomStrangs = async (roomID) => {
       }
       var currentTemperature = 0;
       for (var i = 0; i < foundRoom.thermostats.length; i++) {
-        currentTemperature += foundRoom.thermostats[i];
+        currentTemperature += foundRoom.thermostats[i].temperature;
       }
       currentTemperature /= foundRoom.thermostats.length;
+      console.log(
+        "currentTemperature ",
+        currentTemperature,
+        " foundRoom.targetTemperature ",
+        foundRoom.targetTemperature,
+      );
       if (currentTemperature < foundRoom.targetTemperature) {
         for (var i = 0; i < foundRoom.strangs.length; i++) {
-          goToStrangPosPinCtrl(foundRoom.strangs[i], maxTIME);
+          moveMax(foundRoom.strangs[i]);
         }
       } else {
         for (var i = 0; i < foundRoom.strangs.length; i++) {
-          goToStrangPosPinCtrl(foundRoom.strangs[i], 0);
+          moveZero(foundRoom.strangs[i]);
         }
       }
     })

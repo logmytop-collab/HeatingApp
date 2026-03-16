@@ -101,7 +101,7 @@ class UserService {
   openStrang(room_id: any, strangID: any) {
     const url =
       SERVER_USER_API_URL +
-      "moveZero" +
+      "moveMax" +
       "?roomID=" +
       room_id +
       "&strangID=" +
@@ -113,7 +113,7 @@ class UserService {
   closeStrang(room_id: any, strangID: any) {
     const url =
       SERVER_USER_API_URL +
-      "moveMax" +
+      "moveZero" +
       "?roomID=" +
       room_id +
       "&strangID=" +

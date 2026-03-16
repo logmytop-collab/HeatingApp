@@ -18,7 +18,15 @@ async function getAll(req, res) {
       {
         model: strangs,
         as: "strangs",
-        attributes: ["id", "name", "pin1", "pin2", "currentPos", "state"], // Only select needed fields
+        attributes: [
+          "id",
+          "name",
+          "pin1",
+          "pin2",
+          "currentPos",
+          "maxPos",
+          "state",
+        ], // Only select needed fields
       },
     ],
   });
@@ -41,7 +49,15 @@ async function getSingleRoom(req, res) {
       {
         model: strangs,
         as: "strangs",
-        attributes: ["id", "name", "pin1", "pin2", "currentPos", "state"], // Only select needed fields
+        attributes: [
+          "id",
+          "name",
+          "pin1",
+          "pin2",
+          "currentPos",
+          "maxPos",
+          "state",
+        ], // Only select needed fields
       },
     ],
   });
@@ -79,14 +95,15 @@ async function setRoomTemperature(req, res) {
       {
         model: strangs,
         as: "strangs",
-        attributes: ["id", "name", "pin1", "pin2", "currentPos", ""], // Only select needed fields
+        attributes: ["id", "name", "pin1", "pin2", "currentPos", "maxPos"], // Only select needed fields
       },
     ],
   });
 
-  room.targetTemperature = targetTemperature;
+  room.targetTemperature = Number(targetTemperature);
+  console.log("JSON.stringify(roomsWithStrangs):", JSON.stringify(room));
   await room.save();
-
+  console.log("after save");
   //console.log("JSON.stringify(roomsWithStrangs):", JSON.stringify(room));
 
   res.status(200).send(JSON.stringify(room));
@@ -111,7 +128,15 @@ async function updateRoomName(req, res) {
       {
         model: strangs,
         as: "strangs",
-        attributes: ["id", "name", "pin1", "pin2", "currentPos", "state"], // Only select needed fields
+        attributes: [
+          "id",
+          "name",
+          "pin1",
+          "pin2",
+          "currentPos",
+          "maxPos",
+          "state",
+        ], // Only select needed fields
       },
     ],
   });
