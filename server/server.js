@@ -75,7 +75,7 @@ async function initial() {
       strangs: [
         { name: "Strang 01", pin1: 12, pin2: 16, currentPos: 0, state: 1 },
       ],
-      thermostats: [{ name: "Schlafzimmer", deviceID: "0xf4b3b1fffe4e807d" }],
+      thermostats: [{ name: "Schlafzimmer"}],
     },
     {
       include: [
@@ -95,7 +95,7 @@ async function initial() {
         { name: "Strang 04", pin1: 11, pin2: 25, currentPos: 0, state: 1 },
         { name: "Strang 05", pin1: 10, pin2: 22, currentPos: 0, state: 1 },
       ],
-      thermostats: [{ name: "thermo 06" }, { name: "thermo 02" }],
+      thermostats: [{ name: "thermo 06", deviceID: "0xa49e69fffe6daa28" }],
     },
     {
       include: [
@@ -113,7 +113,7 @@ async function initial() {
       strangs: [
         { name: "Strang 06", pin1: 23, pin2: 24, currentPos: 0, state: 1 },
       ],
-      thermostats: [{ name: "thermo 09", deviceID: "0xa4c13801861effff" }],
+      thermostats: [{ name: "thermo 09", deviceID: "0xf4b3b1fffe4e807d" }],
     },
     {
       include: [
@@ -265,9 +265,15 @@ console.log("sleep 5000 ");
 await delay(5000);
 console.log("sync Db");
 
-await db.sequelize.sync({ force: true }).then(() => {
-  console.log("Drop and Resync Db");
-  initial();
+const initialize = false;
+
+await db.sequelize.sync({ alter: !initialize, force: initialize }).then(() => {
+  if (initialize)
+  {
+    console.log("Drop and Resync Db");
+    initial();
+
+  }
 });
 
 //console.log("before await setUpMqtt();");

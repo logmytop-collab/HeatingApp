@@ -9,10 +9,12 @@ import {
 } from "../gpio/strang.gpio.js";
 
 import { mqttClient } from "../mytt/mqtt.helper.js";
+import Logdata from "./logdata.model.js";
 
 const thermostats = db.thermostat;
 const room = db.room;
 const strangs = db.strang;
+const logdatas = db.logdata;
 
 //let mqttClient = mqtt.connect("mqtt://127.0.0.1:1883", options);
 //let mqttClient = mqtt.connect("mqtt://172.20.0.3:1883", options);
@@ -188,12 +190,20 @@ const setUpMqtt = () => {
                 console.log("saved temperature ");
 
                 updateRoomStrangsByID(foundTherma.room.id);
+                console.log("saved temperature ");
+                const Logdata = db.logdata;
+            const log = Logdata.create({
+              temperature: dataJson.temperature,
+              humidity: dataJson.humidity,
+              thermostat_Id: foundTherma.id,
+            }).then(() => {
+              console.log("saved logdata ");
+            });
               })
               .catch((err) => {
                 console.log("error on saved temperature ", err);
               });
 
-            console.log("json Temperature ", dataJson.temperature);
           } catch (exc) {
             console.log("no error on update temperature");
           }

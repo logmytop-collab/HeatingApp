@@ -13,6 +13,7 @@ import Strang from "./strang.model.js";
 import Sequelize from "sequelize";
 import Room from "./room.model.js";
 import Thermostat from "./thermostat.model.js";
+import Logdata from "./logdata.model.js";
 
 console.log("config.DB ", DB);
 
@@ -37,6 +38,7 @@ db.role = Role(sequelize, Sequelize);
 db.room = Room(sequelize, Sequelize);
 db.thermostat = Thermostat(sequelize, Sequelize);
 db.strang = Strang(sequelize, Sequelize);
+db.logdata = Logdata(sequelize, Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: "user_roles",
@@ -58,6 +60,9 @@ db.thermostat.belongsTo(db.room, { foreignKey: "room_Id", as: "room" });
 
 db.room.hasMany(db.strang, { foreignKey: "room_Id", as: "strangs" });
 db.strang.belongsTo(db.room, { foreignKey: "room_Id", as: "room" });
+
+db.thermostat.hasMany(db.logdata, { foreignKey: "thermostat_Id", as: "logdata" });
+db.logdata.belongsTo(db.thermostat, { foreignKey: "thermostat_Id", as: "thermostat" });
 
 
 db.ROLES = ["user", "admin", "moderator"];
